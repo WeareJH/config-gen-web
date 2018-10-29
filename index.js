@@ -1,16 +1,18 @@
-import * as monaco from 'monaco-editor';
+import 'monaco-editor/esm/vs/editor/browser/controller/coreCommands.js';
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
 
 self.MonacoEnvironment = {
     getWorkerUrl: function (moduleId, label) {
-        if (label === 'json') {
-            return './json.worker.bundle.js';
-        }
-        if (label === 'css') {
-            return './css.worker.bundle.js';
-        }
-        if (label === 'html') {
-            return './html.worker.bundle.js';
-        }
+        // if (label === 'json') {
+        //     return './json.worker.bundle.js';
+        // }
+        // if (label === 'css') {
+        //     return './css.worker.bundle.js';
+        // }
+        // if (label === 'html') {
+        //     return './html.worker.bundle.js';
+        // }
         if (label === 'typescript' || label === 'javascript') {
             return './ts.worker.bundle.js';
         }
@@ -24,7 +26,7 @@ import("./pkg/browser_esm_webpack").then(m => {
         'javascript'
     );
 
-    var json_model = monaco.editor.createModel(`{}`, 'json');
+    var json_model = monaco.editor.createModel(m.parse(`//`), 'json');
 
     /**
      * IModelContentChangedEvent
