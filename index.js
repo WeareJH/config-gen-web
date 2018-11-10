@@ -2,6 +2,8 @@ import 'monaco-editor/esm/vs/editor/browser/controller/coreCommands.js';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
 
+import "./css/index.css";
+
 self.MonacoEnvironment = {
     getWorkerUrl: function (moduleId, label) {
         // if (label === 'json') {
@@ -22,24 +24,86 @@ self.MonacoEnvironment = {
 
 import("./pkg/browser_esm_webpack").then(m => {
 
-    var model = monaco.editor.createModel(`// paste your requirejs-config.js file here`,
+    var models = [];
+    var requirejs_model = monaco.editor.createModel(``,
         'javascript'
     );
+    models.push(requirejs_model);
 
-    var json_model = monaco.editor.createModel(m.parse(`//`), 'json');
+    var build_model = monaco.editor.createModel("", 'json');
+
+    var req_log_model = monaco.editor.createModel(`[
+    {
+       "id": "jquery",
+       "referrer": "/",
+       "url": "http://example.com/js/jquery.js" 
+    },
+    {
+       "id": "knockout",
+       "referrer": "/juno-jacket.html",
+       "url": "http://example.com/js/knockout.js" 
+    },
+    {
+       "id": "knockout",
+       "referrer": "/",
+       "url": "http://example.com/js/knockout.js" 
+    }
+]`, 'json');
+    models.push(req_log_model);
+    var bundle_config_model = monaco.editor.createModel(`{
+  "bundles": [
+    {
+      "name": "bundles/main",
+      "urls": [
+        "/",
+        "/women/tops-women/jackets-women.html"
+      ],
+      "children": [
+        {
+          "name": "bundles/product",
+          "urls": [
+            "/juno-jacket.html"
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}
+`, 'json');
+    models.push(bundle_config_model);
 
     /**
      * IModelContentChangedEvent
      */
-    model.onDidChangeContent(e => {
-        let parsed = m.parse(model.getLinesContent().join("\n"));
-        json_model.setValue(parsed);
+    models.forEach(m => {
+        m.onDidChangeContent(e => {
+            send();
+        });
     });
 
     monaco.editor.create(document.getElementById('container'), {
-        model
+        model: requirejs_model
     });
-    monaco.editor.create(document.getElementById('container2'), {
-        model: json_model
+
+    monaco.editor.create(document.getElementById('container4'), {
+        model: build_model
     });
+
+    monaco.editor.create(document.getElementById('container2'), {model: req_log_model});
+    monaco.editor.create(document.getElementById('container3'), {model: bundle_config_model});
+
+    send();
+
+    function gather() {
+        return models.map(x => {
+            return x.getLinesContent().join("\n");
+        });
+    }
+
+    function send() {
+        const gathered = gather();
+        let parsed = m.parse(...gathered);
+        build_model.setValue(parsed);
+    }
 });
